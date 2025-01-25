@@ -9,7 +9,7 @@ export const getChargeIdsFromDB = async () => {
     const query = `
     SELECT Order_id, Charge_Id, Created_Date
       FROM Order_H
-      WHERE Created_Date <= DATEADD(MINUTE, -1, GETDATE()) -- สร้างก่อนมากกว่าเท่ากับ 15 นาที
+      WHERE Created_Date <= DATEADD(MINUTE, -15, GETDATE()) -- สร้างก่อนมากกว่าเท่ากับ 15 นาที
         AND Charge_Id IS NOT NULL
         AND Order_Status = 4
     `;
