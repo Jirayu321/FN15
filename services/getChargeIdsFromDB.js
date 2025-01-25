@@ -2,38 +2,32 @@ import pool from "../config/db.config.js";
 import sql from "mssql";
 
 export const getChargeIdsFromDB = async () => {
-  let connection;
   try {
+    const connection = await pool.connect();
 
-    connection = await pool.connect();
+    // Query
+    const query = `
+    SELECT Order_id, Charge_Id, Created_Date
+      FROM Order_H
+      WHERE Created_Date <= DATEADD(MINUTE, -1, GETDATE()) -- สร้างก่อนมากกว่าเท่ากับ 15 นาที
+        AND Charge_Id IS NOT NULL
+        AND Order_Status = 4
+    `;
 
-    const result = await connection.request()
-      .query(`
-        SELECT Order_id, Charge_Id
-        FROM Order_H
-        WHERE Created_Date >= DATEADD(MINUTE, -15, GETDATE()) 
-          AND CAST(Created_Date AS DATE) = CAST(GETDATE() AS DATE) 
-          AND Charge_Id IS NOT NULL
-          AND Order_Status = 4
-      `);
+    console.log("Generated Query:", query);
 
-    // คืนค่ารายการในรูปแบบ { orderId, chargeId }
+    // Execute Query
+    const result = await connection.request().query(query);
+
+    console.log("Query Result:", result.recordset);
+
+    // Map Data
     return result.recordset.map((row) => ({
       orderId: row.Order_id,
       chargeId: row.Charge_Id,
     }));
   } catch (error) {
-    // แสดงข้อผิดพลาดใน console
-    console.error("Error fetching charge IDs in getChargeIdsFromDB:", error.message || error);
+    console.error("Error fetching charge IDs:", error.message || error);
     return [];
-  } finally {
-    // ปิดการเชื่อมต่อหากเปิดอยู่
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (closeError) {
-        console.error("Error closing the database connection:", closeError.message || closeError);
-      }
-    }
   }
 };
