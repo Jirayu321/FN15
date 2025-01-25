@@ -245,7 +245,7 @@ import { PaymentGateway } from "./services/PaymentGateway.js";
 //   };
 
 // ตั้งค่า Cron Job ให้รันทุก 15 นาที
-cron.schedule("* * * * *", async () => {
+cron.schedule("*/15 * * * *", async () => {
   console.log("Starting Cron Job at", new Date().toLocaleTimeString());
 
   try {
